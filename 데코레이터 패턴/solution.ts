@@ -121,3 +121,5 @@ class Main {
         console.log(`${beverage3.getDescription()}$${beverage3.cost()}`);
     }
 }
+
+new Main();
