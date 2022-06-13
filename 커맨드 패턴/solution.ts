@@ -39,6 +39,44 @@ class Stereo {
     }
 }
 
+class CeilingFan {
+    static HIGHT = 3;
+    static MEDIUM = 2;
+    static LOW = 1;
+    static OFF = 0;
+    location: string;
+    speed: number;
+
+    constructor(location: string) {
+        this.location = location;
+        this.speed = CeilingFan.OFF;
+    }
+
+    high() {
+        console.log("ceilingFan speed is HIGH");
+        this.speed = CeilingFan.HIGHT;
+    }
+
+    medium() {
+        console.log("ceilingFan speed is medium");
+        this.speed = CeilingFan.MEDIUM;
+    }
+
+    low() {
+        console.log("ceilingFan speed is low");
+        this.speed = CeilingFan.LOW;
+    }
+
+    off() {
+        console.log("ceilingFan off");
+        this.speed = CeilingFan.OFF;
+    }
+
+    getSpeed(): number {
+        return this.speed;
+    }
+}
+
 /**
  * 커맨드 객체는 해당 인터페이스를 통해 구현해야 한다.
  */
@@ -125,10 +163,122 @@ class StereoOffWithCDCommand implements Command {
     }
 }
 
+class CeilingFanHighCommand implements Command {
+    ceilingFan: CeilingFan;
+    prevSpeed: number;
+
+    constructor(ceilingFan: CeilingFan) {
+        this.ceilingFan = ceilingFan;
+    }
+
+    execute(): void {
+        this.prevSpeed = this.ceilingFan.getSpeed();
+        this.ceilingFan.high();
+    }
+
+    undo(): void {
+        if(this.prevSpeed === CeilingFan.HIGHT) this.ceilingFan.high();
+        else if(this.prevSpeed === CeilingFan.MEDIUM) this.ceilingFan.medium();
+        else if(this.prevSpeed === CeilingFan.LOW) this.ceilingFan.low();
+        else if(this.prevSpeed === CeilingFan.OFF) this.ceilingFan.off();
+    }
+}
+
+class CeilingFanMediumCommand implements Command {
+    ceilingFan: CeilingFan;
+    prevSpeed: number;
+
+    constructor(ceilingFan: CeilingFan) {
+        this.ceilingFan = ceilingFan;
+    }
+
+    execute(): void {
+        this.prevSpeed = this.ceilingFan.getSpeed();
+        this.ceilingFan.medium();
+    }
+
+    
+    undo(): void {
+        if(this.prevSpeed === CeilingFan.HIGHT) this.ceilingFan.high();
+        else if(this.prevSpeed === CeilingFan.MEDIUM) this.ceilingFan.medium();
+        else if(this.prevSpeed === CeilingFan.LOW) this.ceilingFan.low();
+        else if(this.prevSpeed === CeilingFan.OFF) this.ceilingFan.off();
+    }
+}
+
+class CeilingFanLowCommand implements Command {
+    ceilingFan: CeilingFan;
+    prevSpeed: number;
+
+    constructor(ceilingFan: CeilingFan) {
+        this.ceilingFan = ceilingFan;
+    }
+
+    execute(): void {
+        this.prevSpeed = this.ceilingFan.getSpeed();
+        this.ceilingFan.low();
+    }
+
+    
+    undo(): void {
+        if(this.prevSpeed === CeilingFan.HIGHT) this.ceilingFan.high();
+        else if(this.prevSpeed === CeilingFan.MEDIUM) this.ceilingFan.medium();
+        else if(this.prevSpeed === CeilingFan.LOW) this.ceilingFan.low();
+        else if(this.prevSpeed === CeilingFan.OFF) this.ceilingFan.off();
+    }
+}
+
+class CeilingFanOff implements Command {
+    ceilingFan: CeilingFan;
+    prevSpeed: number;
+
+    constructor(ceilingFan: CeilingFan) {
+        this.ceilingFan = ceilingFan;
+    }
+
+    execute(): void {
+        this.prevSpeed = this.ceilingFan.getSpeed();
+        this.ceilingFan.off();
+    }
+
+    undo(): void {
+        if(this.prevSpeed === CeilingFan.HIGHT) this.ceilingFan.high();
+        else if(this.prevSpeed === CeilingFan.MEDIUM) this.ceilingFan.medium();
+        else if(this.prevSpeed === CeilingFan.LOW) this.ceilingFan.low();
+        else if(this.prevSpeed === CeilingFan.OFF) this.ceilingFan.off();
+    }
+}
+
 // 기본 상태 커맨드
 class NoCommand implements Command {
     execute(): void {}
     undo(): void {}
+}
+
+/**
+ * 매크로 커맨드
+ * 여러 커맨드를 실행시키는 커맨드
+ */
+class MacroCommand implements Command {
+    commands: Command[];
+
+    // command 배열을 받는다.
+    constructor(commands: Command[]) {
+        this.commands = commands;
+    }
+    
+    execute(): void {
+        // 받은 command 배열을 차례대로 실행한다.
+        for(let i = 0; i < this.commands.length; i+=1) {
+            this.commands[i].execute();
+        }
+    }
+
+    undo(): void {
+        for(let i = 0; i < this.commands.length; i+=1) {
+            this.commands[i].undo();
+        }
+    }
 }
 
 class RemoteControl {
@@ -181,7 +331,7 @@ class RemoteControl {
         let message = '';
 
         for(let i = 0; i < this.onCommands.length; i++) {
-            message += `[slot: ${i}] ${this.onCommands[i].constructor.name} ${this.offCommands[i].constructor.name} \n`;
+            message += `[slot: ${i}] ${this.onCommands[i]['constructor']['name']} ${this.offCommands[i]['constructor']['name']} \n`;
         }
 
         return message;
@@ -194,6 +344,7 @@ class Main {
 
         const livingRoomLight: Light = new Light();
         const stereo: Stereo = new Stereo();
+        const ceilingFan: CeilingFan = new CeilingFan("Living Room");
 
         const livingRoomLightOn: LightOnCommand = new LightOnCommand(livingRoomLight);
         const liviningRommLightOff: LightOffCommand = new LightOffCommand(livingRoomLight);
@@ -201,20 +352,77 @@ class Main {
         const stereoOnWithCD: StereoOnWithCDCommand = new StereoOnWithCDCommand(stereo);
         const stereoOffWithCD: StereoOffWithCDCommand = new StereoOffWithCDCommand(stereo);
 
+        const ceilingFanHigh: CeilingFanHighCommand = new CeilingFanHighCommand(ceilingFan);
+        const ceilingFanMedium: CeilingFanMediumCommand = new CeilingFanMediumCommand(ceilingFan);
+        const ceilingFanLow: CeilingFanLowCommand = new CeilingFanLowCommand(ceilingFan);
+        const ceilingFanOff: CeilingFanOff = new CeilingFanOff(ceilingFan);
+
+        // 매크로 커맨드 세팅
+        const commandOn = [livingRoomLightOn, stereoOnWithCD, ceilingFanHigh];
+        const commandOff = [liviningRommLightOff, stereoOffWithCD, ceilingFanOff];
+                
+        const macroOn: MacroCommand = new MacroCommand(commandOn);
+        const macroOff: MacroCommand = new MacroCommand(commandOff);
+
         // 거실 light 0번 버튼에 등록
         remoteControl.setCommand(0, livingRoomLightOn, liviningRommLightOff);
         // 오디오 1번 버튼에 등록
         remoteControl.setCommand(1, stereoOnWithCD, stereoOffWithCD);
+        // 선풍기 High 2번 버튼에 등록
+        remoteControl.setCommand(2, ceilingFanHigh, ceilingFanOff);
+        // 선풍기 Medium 3번 버튼에 등록
+        remoteControl.setCommand(3, ceilingFanMedium, ceilingFanOff);
+        // 선풍기 Low 4번 버튼에 등록
+        remoteControl.setCommand(4, ceilingFanLow, ceilingFanOff);
+
+        remoteControl.setCommand(5, macroOn, macroOff);
 
         console.log(remoteControl.getInformation());
 
         remoteControl.onButtonWasPushed(0);
         remoteControl.offButtonWasPushed(0);
-        remoteControl.unButtonWasPushed();
+        remoteControl.unButtonWasPushed(); // 실행 취소 기능
+
+        console.log('\n');
+
         remoteControl.onButtonWasPushed(1);
         remoteControl.offButtonWasPushed(1);
+        remoteControl.unButtonWasPushed(); // 실행 취소 기능
+
+        console.log('\n');
+
+        remoteControl.onButtonWasPushed(2);
+        remoteControl.offButtonWasPushed(2);
+        remoteControl.unButtonWasPushed(); // 실행 취소 기능
+
+        console.log('\n');
+
+        remoteControl.onButtonWasPushed(3);
+        remoteControl.offButtonWasPushed(3);
+        remoteControl.unButtonWasPushed(); // 실행 취소 기능
+
+        console.log('\n');
+
+        remoteControl.onButtonWasPushed(4);
+        remoteControl.offButtonWasPushed(4);
+        remoteControl.unButtonWasPushed(); // 실행 취소 기능
+
+        console.log('\n');
+
+        console.log("--------------------- Macro On ---------------------");
+        remoteControl.onButtonWasPushed(5);
+
+        console.log('\n');
+
+        console.log("--------------------- Macro Off ---------------------");
+        remoteControl.offButtonWasPushed(5);
+
+        console.log('\n');
+
+        console.log("--------------------- Macro Undo ---------------------");
         remoteControl.unButtonWasPushed();
-    }
+
+     }
 }
 
 new Main();
