@@ -64,6 +64,72 @@
 - 이미 구현되어있는 메소드를 오버라이드 한다는 것은 애초부터 베이스 클래스가 제대로 추상화 될 것이 아니었다고 볼 수 있다.
 - 베이스 클래스에서 메소드를 정의할 때는 모든 서브 클래스에서 공유할 수 있는 것만 정의해야 한다.
 
+## 데메테르의 법칙(디미터 법칙) & 최소 지식 원칙
+
+- 정말 친한 치구하고 얘기하고, 낯선이에게 메세지를 말하지 마라
+- 데메테르의 법칙은 간단하게 의존성을 줄이는 것이다.
+
+```java
+
+// 원칙을 따르지 않는 경우
+class Test {
+    public float getTemp() {
+        Thermometer thermometer = sation.getThermometer();
+        return thermometer.getTemperature();
+    }
+}
+
+// 원칙을 따른 경우
+class Test2 {
+     public float getTemp() {
+        return station.getTemperature();
+    }
+}
+```
+
+- 첫번 쨰는 의존하는 클래스 객체를 두개를 의존한다. 만약에 thermometer가 바뀌게 되는 경우 Test Class 또한 변하겐된다.
+- 두번 째는 의존하는 클래스 객체가 한개이며 원칙을 잘 지킨 케이스이다.
+
+### 메서드 호출 가이드 라인
+
+- 객체 자체의 메서드들
+- 메서드에 매개변수로 전달된 객체
+- 그 메서드에 생성하거나 인스턴스를 만든 객체
+- 그 객체에 구성하는 구성요소
+
+```java
+public class Car {
+    // 구성 요소의 메서드는 호출 가능
+    Engine engine;
+
+    public Car() {
+        // 엔진 초기화 등을 처리
+    }
+
+    public void start(key Key) {
+        // 새로운 객체를 생성 이 객체의 메서드를 호출 가능
+        Doors doors = new Doors();
+        // 매개변수로 전달된 객체의 메서드 호출 가능
+        boolean authorized = key.turnes();
+
+        if(authorized) {
+            // 객체의 구성요소의 메서드는 호출 가능
+            engine.start();
+            // 객체 내에 있는 메서드는 호출 가능
+            updateDashboardDisplay();
+            // 인스턴스를 만든 객체의 메서드는 호출 가능
+            doors.lock();
+        }
+    }
+
+    public void updateDashboardDisplay() {
+        // 디스플레이 갱신
+    }
+}
+```
+
+- Java의 System.out.println 데메테르의 법칙에 어긋난다.
+
 ## Detail
 
 - 즉 코드에 새로운 요구사항이 있을 때 마다 바뀌는 부분이 있다면 그 행동을 바뀌지 않는 다른 부분으로부터 골라내서 분리해야 한다.
