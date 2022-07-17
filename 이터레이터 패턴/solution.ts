@@ -123,7 +123,7 @@ class DinnerMenuIterator implements Iterators {
   }
 }
 
-class DinerMenu {
+class DinerMenu implements Menu {
   static readonly MAX_ITEMS = 6;
   numberOfItems = 0;
   menuItems: Array<MenuItem>;
@@ -191,7 +191,7 @@ class DinerMenu {
   }
 }
 
-class PancakeHouseMenu {
+class PancakeHouseMenu implements Menu {
   menuItems: ArrayList;
 
   constructor() {
