@@ -1,3 +1,19 @@
+interface Iterators {
+  hasNext(): boolean;
+  next(): MenuItem;
+}
+
+/**
+ * 클라이언트에서 메뉴에 들어있는 항목에 대한 반복자를 획들할 수 있게해주는
+ * 간단한 인터페이스
+ * 즉 PancakeHouseMenu와 DinnerMenu class는 똑같은 메서드를 재공하지만 interface가 통합되지 않아 통합되는 인터페이스를 만드는것이다.
+ * 이렇게되면 Waitress와 구상 클래스 사이에 으존성을 줄일 수 있다.
+ *
+ */
+interface Menu {
+  createIterator(): Iterators;
+}
+
 class ArrayList {
   private items: Array<any>;
 
@@ -16,11 +32,6 @@ class ArrayList {
   get(index: number) {
     return this.items[index];
   }
-}
-
-interface Iterators {
-  hasNext(): boolean;
-  next(): MenuItem;
 }
 
 class MenuItem {
@@ -238,10 +249,10 @@ class PancakeHouseMenu {
 }
 
 class Waitress {
-  pancakeHouseMenu: PancakeHouseMenu;
-  dinnerMenu: DinerMenu;
+  pancakeHouseMenu: Menu;
+  dinnerMenu: Menu;
 
-  constructor(pancakeHouseMenu: PancakeHouseMenu, dinnerMenu: DinerMenu) {
+  constructor(pancakeHouseMenu: Menu, dinnerMenu: Menu) {
     this.pancakeHouseMenu = pancakeHouseMenu;
     this.dinnerMenu = dinnerMenu;
   }
@@ -269,3 +280,8 @@ class Waitress {
 }
 
 new Waitress(new PancakeHouseMenu(), new DinerMenu()).printMenu();
+
+/**
+ * iterator를 활용해 각 class에서 리턴되는 객체 컬렉션의 형식이 다르기 때문에 이에 맞춰서 프로그래밍 안해도되고
+ * 각 class에서 next, hasnext 메서드를 통해서 다른 컬렉션이여도 같은 메서드로 실행이가능하다.
+ */
